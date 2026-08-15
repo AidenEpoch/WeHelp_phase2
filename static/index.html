@@ -1,11 +1,206 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Index</title>
+  <title>台北一日遊</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  
+    <nav class="navSection">
+        <div class="nav">
+            <div class="navLeft" onclick="location.reload()">台北一日遊</div>
+            <div class="navRight">
+                <div>預訂行程</div>
+                <div>登入/註冊</div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="heroSection">
+        <div class="sectionContent">
+            <div class="heroTitle">輕鬆享受台北一日悠閒</div>
+            <div class="heroSubtitle">探索每個角落，體驗城市的深度旅遊行程</div>
+            <div class="searchBar">
+                <div class="categoryBtn" id="categoryBtn">全部分類▼</div>
+                <input type="text" id="searchInput" class="searchInput" placeholder="輸入景點名稱或捷運站查詢">
+                <div class="searchBtn" id="searchBtn">
+                    <!-- SVG 搜尋圖標 -->
+                    <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13 21C17.4183 21 21 17.4183 21 13C21 8.58172 17.4183 5 13 5C8.58172 5 5 8.58172 5 13C5 17.4183 8.58172 21 13 21Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M25 25L19 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                
+                <div class="categoryPanel" id="categoryPanel"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="attractionSection">
+        <div class="listBar">
+            <div class="scrollBtn" id="scrollLeft">&lt;</div>
+            <div class="mrtList" id="mrtList"></div>
+            <div class="scrollBtn" id="scrollRight">&gt;</div>
+        </div>
+        
+        <div id="attractionContainer" class="attractionItems"></div>
+        <div id="sentinel"></div>
+    </div>
+
+    <footer class="footer">
+        <div>COPYRIGHT © 2021 台北一日遊</div>
+    </footer>
+
+    <script>
+        let nextPage = 0;
+        let isLoading = false;
+        let currentCategory = "";
+        let currentKeyword = "";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadAttractions(true);
+            loadCategories();
+            loadMRTs();
+            setupIntersectionObserver();
+            setupEventListeners();
+        });
+
+        async function loadAttractions(isReset = false) {
+            if (isLoading || (nextPage === null && !isReset)) return;
+            isLoading = true;
+
+            if (isReset) {
+                nextPage = 0;
+                document.getElementById("attractionContainer").innerHTML = "";
+            }
+
+            let url = `/api/attractions?page=${nextPage}`;
+            if (currentCategory) url += `&category=${encodeURIComponent(currentCategory)}`;
+            if (currentKeyword) url += `&keyword=${encodeURIComponent(currentKeyword)}`;
+
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+                const container = document.getElementById("attractionContainer");
+                
+                if (result.data && result.data.length > 0) {
+                    result.data.forEach(item => {
+                        const card = document.createElement("div");
+                        card.className = "section";
+                        const imageUrl = item.images[0] || "/static/welcome_image.png";
+
+                        card.innerHTML = `
+                            <div class="imgBlock">
+                                <img src="${imageUrl}" alt="${item.name}">
+                                <div class="imgName">${item.name}</div>
+                            </div>
+                            <div class="imgInfo">
+                                <div>${item.mrt || "無捷運站"}</div>
+                                <div>${item.category}</div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                } else if (isReset) {
+                    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px;">查無相關景點</div>`;
+                }
+
+                nextPage = result.nextPage;
+            } catch (error) {
+                console.error("載入景點失敗:", error);
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch("/api/categories");
+                const result = await response.json();
+                const panel = document.getElementById("categoryPanel");
+                
+                if (result.data) {
+                    panel.innerHTML = "";
+                    result.data.forEach(cat => {
+                        const item = document.createElement("div");
+                        item.className = "categoryItem";
+                        item.textContent = cat;
+                        item.addEventListener("click", () => {
+                            currentCategory = cat;
+                            document.getElementById("categoryBtn").textContent = cat;
+                            panel.style.display = "none";
+                        });
+                        panel.appendChild(item);
+                    });
+                }
+            } catch (error) {
+                console.error("載入分類失敗:", error);
+            }
+        }
+
+        async function loadMRTs() {
+            try {
+                const response = await fetch("/api/mrts");
+                const result = await response.json();
+                const mrtList = document.getElementById("mrtList");
+
+                if (result.data) {
+                    mrtList.innerHTML = "";
+                    result.data.forEach(mrt => {
+                        const item = document.createElement("div");
+                        item.className = "mrtItem";
+                        item.textContent = mrt;
+                        item.addEventListener("click", () => {
+                            document.getElementById("searchInput").value = mrt;
+                            currentKeyword = mrt;
+                            loadAttractions(true);
+                        });
+                        mrtList.appendChild(item);
+                    });
+                }
+            } catch (error) {
+                console.error("載入捷運站失敗:", error);
+            }
+        }
+
+        function setupIntersectionObserver() {
+            const sentinel = document.getElementById("sentinel");
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && nextPage !== null && !isLoading) {
+                    loadAttractions(false);
+                }
+            }, { threshold: 0.1 });
+
+            observer.observe(sentinel);
+        }
+
+        function setupEventListeners() {
+            const categoryBtn = document.getElementById("categoryBtn");
+            const categoryPanel = document.getElementById("categoryPanel");
+            
+            categoryBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                categoryPanel.style.display = categoryPanel.style.display === "grid" ? "none" : "grid";
+            });
+
+            document.addEventListener("click", () => {
+                categoryPanel.style.display = "none";
+            });
+
+            document.getElementById("searchBtn").addEventListener("click", () => {
+                currentKeyword = document.getElementById("searchInput").value.trim();
+                loadAttractions(true);
+            });
+
+            const mrtList = document.getElementById("mrtList");
+            document.getElementById("scrollLeft").addEventListener("click", () => {
+                mrtList.scrollLeft -= 300;
+            });
+            document.getElementById("scrollRight").addEventListener("click", () => {
+                mrtList.scrollLeft += 300;
+            });
+        }
+    </script>
 </body>
 </html>
