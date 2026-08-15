@@ -169,14 +169,27 @@ body {
     user-select: none;
     width: 32px;
     height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.8;
 }
 .scrollBtn:hover {
     opacity: 1;
 }
+
+.leftBtn{
+    background-image: url("/static/left_default.png");
+}
+
+.leftBtn:hover{
+    background-image: url("/static/left_hover.png");
+}
+
+.rightBtn{
+    background-image: url("/static/right_default.png");
+}   
+
+.rightBtn:hover{
+    background-image: url("/static/right_hover.png");
+}
+
 .mrtList {
     display: flex;
     gap: 15px;
