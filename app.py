@@ -212,8 +212,9 @@ async def getAttractionById(attraction_id: int):
             cursor.close()
             conn.close()
 
-    
-    app.mount(
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app.mount(
     "/static",
     StaticFiles(directory=os.path.join(BASE_DIR, "static")),
     name="static",
