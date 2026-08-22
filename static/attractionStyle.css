@@ -211,9 +211,38 @@ body {
 }
 
 .radioLabel input[type="radio"] {
+    /*height: 22px;
+    width: 22px;
     margin-right: 6px;
-    accent-color: #448899;
+    accent-color: #448899;*/
+    display: none;
 }
+
+.radioCustom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #448899;
+    border-radius: 50%;
+    background-color: #ffffff;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.radioLabel input[type="radio"]:checked + .radioCustom::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px; 
+    height: 14px; 
+    background-color: #448899;
+    border-radius: 50%;
+}
+
 
 .scheduleBtn {
     background-color: #448899;
@@ -332,20 +361,60 @@ body {
 
 @media (max-width: 600px) {
     .attractionSection {
-        flex-direction: column;
+        /*flex-direction: column;
         align-items: center;
-        gap: 20px;
+        gap: 20px;*/
+        padding: 0;
     }
 
-    .attractionImgContainer, .attractionContent {
+    /*.attractionImgContainer, .attractionContent {
         width: 100%;
+    }*/
+
+    .attractionContent {
+        padding: 0 15px;
     }
 
     .attractionImgContainer {
-        height: 350px;
+        /*height: 350px;*/
+        width: 100%;
+        border-radius: 0;
     }
 
     .divider {
         width: 90%;
     }
 }
+
+
+@media (min-width: 601px) and (max-width: 1200px) {
+    .attractionSection {
+        width: 100%;
+        max-width: 1200px;
+        box-sizing: border-box;
+    }
+
+    .attractionImgContainer {
+        width: 48%; 
+    }
+
+    .attractionContent {
+        width: 48%; 
+    }
+}
+
+@media (max-width: 600px) {
+    .attractionSection {
+        padding: 0; 
+    }
+
+    .attractionImgContainer {
+        border-radius: 0; 
+    }
+
+    .attractionContent {
+        padding: 0 15px; 
+        box-sizing: border-box;
+    }
+}
+
