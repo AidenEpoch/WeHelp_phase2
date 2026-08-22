@@ -1,6 +1,9 @@
 from fastapi import *
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+import os
 app=FastAPI()
+
 
 # Static Pages (Never Modify Code in this Block)
 @app.get("/", include_in_schema=False)
@@ -208,3 +211,11 @@ async def getAttractionById(attraction_id: int):
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(BASE_DIR, "static")),
+    name="static",
+)

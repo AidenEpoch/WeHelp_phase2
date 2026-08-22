@@ -1,11 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attraction</title>
+  <link rel="stylesheet" href="/static/attractionStyle.css">
+  <title>景點頁面 - 台北一日遊</title>
 </head>
 <body>
-  
+  <nav class="navSection">
+    <div class="nav">
+      <div class="navLeft" onclick="location.href='/'">台北一日遊</div>
+      <div class="navRight">
+        <div>預訂行程</div>
+        <div>登入/註冊</div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="attractionBlock">
+    <div class="attractionSection">
+      
+      <div class="attractionImgContainer">
+        <div class="attractionImg" id="imagePos"></div>
+        <button class="arrowBtn left" id="prevBtn" onclick="prevImage()">
+          <img src="/static/left_default.png" onmouseover="this.src='/static/left_hover.png'" onmouseout="this.src='/static/left_default.png'" alt="上一張">
+        </button>
+        <button class="arrowBtn right" id="nextBtn" onclick="nextImage()">
+          <img src="/static/right_default.png" onmouseover="this.src='/static/right_hover.png'" onmouseout="this.src='/static/right_default.png'" alt="下一張">
+        </button>
+        <div class="barsContainer" id="barsContainer"></div>
+      </div>
+
+      <div class="attractionContent">
+        <div class="attractionName" id="attractionName">載入中...</div>
+        <div class="attractionInfo" id="attractionInfo"></div>
+        
+        <form class="bookingForm" onsubmit="event.preventDefault();">
+          <div class="schedule">訂購導覽行程</div>
+          <div class="introText">以此景點為中心的一日行程，帶您探索城市角落故事</div>
+          
+          <div class="formRow">
+            <label for="bookingDate" class="labelBold">選擇日期：</label>
+            <div class="customDateWrapper" onclick="triggerDatePicker()">
+              <input type="text" id="dateDisplay" class="dateInput" placeholder="yyyy/mm/dd" readonly>
+              
+              <img src="/static/calendar.png" class="calendarIcon" alt="選擇日期">
+              
+              <input type="date" id="bookingDate" class="hiddenDateInput" onchange="formatDateValue(this.value)">
+            </div>
+          </div>
+
+          <div class="formRow">
+            <span class="labelBold">選擇時間：</span>
+            <label class="radioLabel">
+              <input type="radio" name="timeSelect" value="morning" checked onclick="updatePrice('morning')">
+              <span class="radioCustom"></span> 上半天
+            </label>
+            <label class="radioLabel">
+              <input type="radio" name="timeSelect" value="afternoon" onclick="updatePrice('afternoon')">
+              <span class="radioCustom"></span> 下半天
+            </label>
+          </div>
+
+          <div class="formRow">
+            <span class="labelBold">導覽費用：</span>
+            <span id="priceText">新台幣 2000 元</span>
+          </div>
+
+          <div class="btnSection">
+            <button type="submit" class="scheduleBtn">開始預約行程</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <hr class="divider">
+
+  <section class="inform">
+    <div class="textSection" id="description"></div>
+    <div class="infoBlock">
+      <div class="addressTitle">景點地址：</div>
+      <div class="addressInfo" id="address"></div>
+    </div>
+    <div class="infoBlock">
+      <div class="addressTitle">交通方式：</div>
+      <div class="addressInfo" id="transport"></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div>COPYRIGHT © 2021 台北一日遊</div>
+  </footer>
+
+  <script>
+    let currentImages = [];
+    let currentIndex = 0;
+
+    function updatePrice(time) {
+      const priceText = document.getElementById("priceText");
+      if (time === 'morning') {
+        priceText.textContent = "新台幣 2000 元";
+      } else {
+        priceText.textContent = "新台幣 2500 元";
+      }
+    }
+
+    function updateSlideshow() {
+      const imageContainer = document.getElementById("imagePos");
+      const bars = document.querySelectorAll(".bar");
+
+      if (currentImages.length > 0) {
+        imageContainer.style.backgroundImage = `url("${currentImages[currentIndex]}")`;
+      }
+
+      bars.forEach((bar, idx) => {
+        if (idx === currentIndex) {
+          bar.classList.add("active");
+        } else {
+          bar.classList.remove("active");
+        }
+      });
+    }
+
+    function prevImage() {
+      if (currentImages.length === 0) return;
+      currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+      updateSlideshow();
+    }
+
+    function nextImage() {
+      if (currentImages.length === 0) return;
+      currentIndex = (currentIndex + 1) % currentImages.length;
+      updateSlideshow();
+    }
+
+    async function loadAttractionData() {
+      try {
+        const pathParts = window.location.pathname.split('/');
+        const attractionId = pathParts[pathParts.length - 1];
+
+        const response = await fetch(`/api/attraction/${attractionId}`);
+        const result = await response.json();
+
+        if (!response.ok || result.error) {
+          document.getElementById("attractionName").textContent = "找不到該景點資訊";
+          return;
+        }
+
+        const data = result.data;
+
+        document.getElementById("attractionName").textContent = data.name;
+        document.getElementById("attractionInfo").textContent = `${data.category} at ${data.mrt || "無捷運站"}`;
+        document.getElementById("description").textContent = data.description;
+        document.getElementById("address").textContent = data.address;
+        document.getElementById("transport").textContent = data.transport;
+
+        currentImages = data.images || [];
+        currentIndex = 0;
+
+        const barsContainer = document.getElementById("barsContainer");
+        barsContainer.innerHTML = "";
+
+        if (currentImages.length > 0) {
+          currentImages.forEach((_, idx) => {
+            const bar = document.createElement("div");
+            bar.className = "bar";
+            if (idx === 0) bar.classList.add("active");
+            bar.addEventListener("click", () => {
+              currentIndex = idx;
+              updateSlideshow();
+            });
+            barsContainer.appendChild(bar);
+          });
+          updateSlideshow();
+        }
+
+      } catch (error) {
+        console.error("載入景點資料失敗：", error);
+      }
+    }
+
+function triggerDatePicker() {
+  const dateInput = document.getElementById("bookingDate");
+  if ('showPicker' in dateInput) {
+    dateInput.showPicker();
+  } else {
+    dateInput.focus();
+  }
+}
+
+function formatDateValue(val) {
+  if (!val) return;
+  const formatted = val.replace(/-/g, '/');
+  document.getElementById("dateDisplay").value = formatted;
+}
+
+    document.addEventListener("DOMContentLoaded", loadAttractionData);
+  </script>
 </body>
 </html>
