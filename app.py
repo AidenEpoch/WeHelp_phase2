@@ -219,3 +219,4 @@ app.mount(
     StaticFiles(directory=os.path.join(BASE_DIR, "static")),
     name="static",
 )
+
