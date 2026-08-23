@@ -211,9 +211,38 @@ body {
 }
 
 .radioLabel input[type="radio"] {
+    /*height: 22px;
+    width: 22px;
     margin-right: 6px;
-    accent-color: #448899;
+    accent-color: #448899;*/
+    display: none;
 }
+
+.radioCustom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #448899;
+    border-radius: 50%;
+    background-color: #ffffff;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.radioLabel input[type="radio"]:checked + .radioCustom::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px; 
+    height: 14px; 
+    background-color: #448899;
+    border-radius: 50%;
+}
+
 
 .scheduleBtn {
     background-color: #448899;
@@ -329,23 +358,68 @@ body {
     width: 100%;
 }
 
-
-@media (max-width: 600px) {
-    .attractionSection {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
+@media (min-width: 601px) and (max-width: 1200px) {
+    .attractionBlock {
+        width: 100%;
+        overflow-x: hidden;
     }
 
-    .attractionImgContainer, .attractionContent {
-        width: 100%;
+    .attractionSection {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 15px !important;
+        gap: 20px !important;
+        box-sizing: border-box !important;
     }
 
     .attractionImgContainer {
-        height: 350px;
+        width: 48% !important;
+        max-width: 540px !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
     }
 
-    .divider {
-        width: 90%;
+    .attractionContent {
+        width: 48% !important;
+        max-width: 600px !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
     }
 }
+
+
+@media (max-width: 600px) {
+    
+    .attractionBlock {
+        margin-top: 0 !important;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    
+    .attractionSection {
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    
+    .attractionImgContainer {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 350px !important;
+        border-radius: 0 !important;
+        flex-shrink: 1 !important;
+    }
+
+    
+    .attractionContent {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 20px 15px !important;
+        box-sizing: border-box !important;
+    }
+}
+
