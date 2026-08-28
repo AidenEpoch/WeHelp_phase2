@@ -1,0 +1,40 @@
+<dialog class="signDialog" id="signInDialog">
+        <div class="hat"></div>
+        <div class="signInBlock" id="sign_in_block">
+            <div class="signInContent" id="sign_in_cont">
+                <img src="/static/close.png" class="signClose" onclick="closeSignIn()">
+                <div class="signInTitle">登入會員帳號</div>
+                <div class="signInMain">
+                    <input type="text" placeholder="輸入電子信箱" class="signInInput" id="signInEmail">
+                    <input type="password" placeholder="輸入密碼" class="signInInput" id="signInPassword">
+                    <div class="SignInButton" onclick="signIn()">
+                        <div>登入帳戶</div>
+                    </div>
+                    <div style="display: none; height: 24px;" id="signInMsg"></div>
+                    <div class="registraction">還沒有帳號?<span class="regisButton" onclick="openRegist()">點此註冊</span></div>
+                </div>
+            </div>
+        </div>
+</dialog>
+
+
+<dialog class="signUpDialog" id="signUpDialog">
+        <div class="hat"></div>
+        <div class="signUpBlock" id="sign_up_block">
+            <div class="signUpContent" id="sign_up_cont">
+                <img src="/static/close.png" class="signClose" onclick="closeSignUp()">
+                <div class="signInTitle">註冊會員帳號</div>
+                <div class="signUpMain">
+                    <input type="text" placeholder="輸入姓名" class="signInInput" id="signUpName">
+                    <input type="text" placeholder="輸入電子郵件" class="signInInput" id="signUpEmail">
+                    <input type="password" placeholder="輸入密碼" class="signInInput" id="signUpPassword">
+                    <div class="SignInButton" onclick="signUp()">
+                        <div>註冊新帳戶</div>
+                    </div>
+                    <div style="display: none; height: 24px;" id="signUpMsg"></div>
+                    <div class="registraction">已有帳戶了?<span class="regisButton" onclick="openSignIn()">點此登入</span></div>
+                </div>
+            </div>
+        </div>
+</dialog>
+

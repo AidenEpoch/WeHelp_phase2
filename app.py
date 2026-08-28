@@ -28,6 +28,10 @@ import mysql.connector
 from mysql.connector import pooling
 from typing import Optional
 from fastapi.responses import JSONResponse
+from fastapi import Request
+import json
+import jwt
+from datetime import datetime, timedelta, timezone
 
 db_config ={
 	"user" : "root",
@@ -173,7 +177,110 @@ async def getAttractions(page: int = Query(0, ge=0),keyword: Optional[str] = Non
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
+
             
+@app.post("/api/user")
+async def addNewMember(request: Request):
+    body = await request.json()
+    name = body["name"]
+    email = body["email"]
+    password = body["password"]
+    conn = None
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+        SELECT email FROM members WHERE email = %s               
+        """, (email,))
+        result = cursor.fetchone()
+        if result != None:
+            return JSONResponse(
+                status_code=400,
+                content={"error": True, "message": f"註冊失敗，重複的email"}
+        )
+
+        cursor.execute("""
+            INSERT INTO members(name, email, password)VALUES(%s, %s, %s)
+        """, (name, email, password))
+        conn.commit()
+        return JSONResponse(
+            status_code = 200,
+            content = {"ok": True}
+        )
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
+        )
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
+@app.get("/api/user/auth")
+async def getMemberInformation(request: Request):
+    auth = request.headers.get("Authorization")
+    #print(f"auth:{auth.split(" ")[1]}")
+    token = auth.split(" ")[1]
+    try:
+        result = jwt.decode(token, "secret", algorithms=["HS256"])
+        member_id = result["id"]
+        member_name = result["name"]
+        member_email = result["email"]
+        return JSONResponse(
+            status_code = 200,
+            content = {"data":{"id": member_id, "name": member_name, "email": member_email}}
+        )
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return JSONResponse(status_code=200, content={"data": None})
+    
+    
+
+@app.put("/api/user/auth")
+async def signIn(request: Request):
+    body = await request.json()
+    email = body["email"]
+    password = body["password"]
+    conn = None
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+        SELECT * FROM members WHERE email = %s AND password = %s            
+        """, (email, password,))
+        result = cursor.fetchone()
+        if result == None:
+            return JSONResponse(
+                status_code = 400,
+                content = {"error": True, "message": "信箱或密碼錯誤"}
+            )
+        else:
+            now = datetime.now(timezone.utc)
+            payload = {
+                "id": result["id"],
+                "name": result["name"],
+                "email": result["email"],
+                "iat": now,
+                "exp": now + timedelta(days=7)
+            }
+            token = jwt.encode(payload, "secret", algorithm="HS256")   #聽說實務上會將secret key藏在某個pem當中，然後pem檔不能讓前端看到
+            return JSONResponse(
+                status_code = 200,
+                content = {"token": token}
+            )
+
+    except Exception as e:
+        return JSONResponse(
+            status_code = 500,
+            content = {"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
+        )
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
 
 
 @app.get("/api/attraction/{attraction_id}")
@@ -211,6 +318,7 @@ async def getAttractionById(attraction_id: int):
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

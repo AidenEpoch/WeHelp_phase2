@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>台北一日遊</title>
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/signLog.css">
 </head>
 <body>
     <nav class="navSection">
@@ -12,7 +13,8 @@
             <div class="navLeft" onclick="location.reload()">台北一日遊</div>
             <div class="navRight">
                 <div>預訂行程</div>
-                <div>登入/註冊</div>
+                <div onclick="openSignDialog()" id="signIcon">登入/註冊</div>
+                <div onclick="logout()" id="logoutIcon" style="display: none;">登出系統</div>
             </div>
         </div>
     </nav>
@@ -52,6 +54,15 @@
         <div>COPYRIGHT © 2021 台北一日遊</div>
     </footer>
 
+
+    <script src="/static/signLog.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        initAuthModal();
+    });
+    </script>
+
+
     <script>
         let nextPage = 0;
         let isLoading = false;
@@ -66,6 +77,7 @@
             setupEventListeners();
         });
 
+        
         async function loadAttractions(isReset = false) {
             if (isLoading || (nextPage === null && !isReset)) return;
             isLoading = true;
@@ -208,6 +220,7 @@
                 mrtList.scrollLeft += 300;
             });
         }
+
     </script>
 </body>
 </html>
