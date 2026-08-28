@@ -1,0 +1,147 @@
+.signDialog{
+    margin: auto;
+    width: 340px;
+    min-height: 275px;
+    border: none;
+    border-radius: 5px;
+    overflow: hidden; 
+    box-sizing: border-box;
+}
+
+.hat{
+    width: 100%;
+    height: 10px;
+    background: #337788;
+}
+
+.signInBlock{
+    width: 100%;
+    /*height: 265px;*/
+    padding: 15px 0 20px 0;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.signInContent{
+    width: 310px;
+    /*height: 234px; */
+    height: auto;
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.signInTitle{
+    height: 27px;
+    width: 100%;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.signInInput{
+    height: 47px;
+    width: 100%;
+    padding: 15px;
+    border: 1px  #CCCCCC solid;
+    border-radius: 5px;
+}
+
+.SignInButton{
+    height: 46px;
+    width: 100%;
+    background-color: #448899;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 19px;
+    font-weight: 400;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.registraction{
+    width: 100%;
+    height: 22px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666666;
+}
+
+
+.signClose{
+    height: 30px;
+    width: 30px;
+    position: absolute;
+    top: 20px;
+    left: 300px;
+    cursor: pointer;
+}
+
+.signInMain{
+    width: 100%;
+    /*height: 192px;*/
+    height: auto;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.regisButton{
+    cursor: pointer;
+}
+
+.signUpDialog{
+    width: 340px;
+    min-height: 332px;
+    border-radius: 5px;
+    margin: auto;
+    border: none;
+    overflow: hidden; 
+    box-sizing: border-box;
+}
+
+.signUpBlock{
+    /*height: 322px;*/
+    padding: 15px 0 20px 0;
+    height: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.signUpContent{
+    width: 310px;
+    /*height: 291px;*/
+    height: auto;
+    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.signUpMain{
+    width: 100%;
+    /*height: 249px;*/
+    height: auto;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}

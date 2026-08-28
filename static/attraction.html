@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/static/attractionStyle.css">
+  <link rel="stylesheet" href="/static/signLog.css">
   <title>景點頁面 - 台北一日遊</title>
 </head>
 <body>
@@ -12,7 +13,8 @@
       <div class="navLeft" onclick="location.href='/'">台北一日遊</div>
       <div class="navRight">
         <div>預訂行程</div>
-        <div>登入/註冊</div>
+        <div onclick="openSignDialog()" id="signIcon">登入/註冊</div>
+        <div onclick="logout()" id="logoutIcon" style="display: none;">登出系統</div>
       </div>
     </div>
   </nav>
@@ -93,6 +95,13 @@
   <footer class="footer">
     <div>COPYRIGHT © 2021 台北一日遊</div>
   </footer>
+
+  <script src="/static/signLog.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        initAuthModal();
+    });
+    </script>
 
   <script>
     let currentImages = [];
