@@ -12,7 +12,7 @@
     <div class="nav">
       <div class="navLeft" onclick="location.href='/'">台北一日遊</div>
       <div class="navRight">
-        <div>預訂行程</div>
+        <div onclick = "orderSchedule()">預訂行程</div>
         <div onclick="openSignDialog()" id="signIcon">登入/註冊</div>
         <div onclick="logout()" id="logoutIcon" style="display: none;">登出系統</div>
       </div>
@@ -25,10 +25,10 @@
       <div class="attractionImgContainer">
         <div class="attractionImg" id="imagePos"></div>
         <button class="arrowBtn left" id="prevBtn" onclick="prevImage()">
-          <img src="/static/left_default.png" onmouseover="this.src='/static/left_hover.png'" onmouseout="this.src='/static/left_default.png'" alt="上一張">
+          <img src="/static/image/left_default.png" onmouseover="this.src='/static/image/left_hover.png'" onmouseout="this.src='/static/image/left_default.png'" alt="上一張">
         </button>
         <button class="arrowBtn right" id="nextBtn" onclick="nextImage()">
-          <img src="/static/right_default.png" onmouseover="this.src='/static/right_hover.png'" onmouseout="this.src='/static/right_default.png'" alt="下一張">
+          <img src="/static/image/right_default.png" onmouseover="this.src='/static/image/right_hover.png'" onmouseout="this.src='/static/image/right_default.png'" alt="下一張">
         </button>
         <div class="barsContainer" id="barsContainer"></div>
       </div>
@@ -46,7 +46,7 @@
             <div class="customDateWrapper" onclick="triggerDatePicker()">
               <input type="text" id="dateDisplay" class="dateInput" placeholder="yyyy/mm/dd" readonly>
               
-              <img src="/static/calendar.png" class="calendarIcon" alt="選擇日期">
+              <img src="/static/image/calendar.png" class="calendarIcon" alt="選擇日期">
               
               <input type="date" id="bookingDate" class="hiddenDateInput" onchange="formatDateValue(this.value)">
             </div>

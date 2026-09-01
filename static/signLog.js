@@ -38,13 +38,27 @@ async function logout(){
     document.querySelector("#logoutIcon").style.display = "none";
 }
 
-function openSignDialog() {
+async function openSignDialog() {
     const signInDialog = document.querySelector("#signInDialog");
     const sign_in_block = document.querySelector("#sign_in_block");
     const sign_in_cont = document.querySelector("#sign_in_cont");
     signInDialog.showModal();
     const signInMsg = document.querySelector("#signInMsg");
     signInMsg.style.display = "none";
+}
+
+async function orderSchedule(){
+    const token = localStorage.getItem("token");
+    if(token == null){
+        const signInDialog = document.querySelector("#signInDialog");
+        const sign_in_block = document.querySelector("#sign_in_block");
+        const sign_in_cont = document.querySelector("#sign_in_cont");
+        signInDialog.showModal();
+        const signInMsg = document.querySelector("#signInMsg");
+        signInMsg.style.display = "none";
+    }else{
+        alert("已經登入囉~");
+    }
 }
 
 function closeSignIn(){

@@ -319,6 +319,44 @@ async def getAttractionById(attraction_id: int):
             cursor.close()
             conn.close()
 
+@app.get("/api/booking")
+async def getOrder(request: Request):
+    body = await request.json()
+    order_date = body["date"]
+    order_time = body["time"]
+    order_price = body["price"]
+    return JSONResponse(
+        status_code = 200,
+        content = {"data": {}, "date": order_date, "time": order_time, "price": order_price}
+    )
+
+@app.post("/api/booking")
+async def setSchedule(request: Request):
+    body = await request.json()
+    try:
+        return JSONResponse(
+            status_code = 200,
+            content = {"ok": True}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code = 500,
+            content = {"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
+        )
+
+@app.delete("/api/booking")
+async def deleteSchedule():
+    try:
+        return JSONResponse(
+            status_code = 200,
+            content = {"ok": True}
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code = 403,
+            content = {"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
+        )
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
