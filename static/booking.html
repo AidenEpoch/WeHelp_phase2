@@ -36,10 +36,10 @@
                             <div id="tripTitle"></div>
                             <img class="deleteBtn" onclick="deleteBooking()" src="/static/image/delete@2x.png"></img>
                         </div>
-                        <div id="tripDate"  class="tripDetail"></div>
-                        <div id="tripTime"  class="tripDetail"></div>
-                        <div id="tripPrice" class="tripDetail" style="width: 174px; height: 20px;"></div>
-                        <div id="tripAddr"  class="tripDetail"></div>
+                        <div class="tripDetail" style="display: flex; font-weight: 700; font-size: 16px;">日期 : <div id="tripDate" style="font-weight: 400; margin-left: 5px;"></div></div>
+                        <div class="tripDetail" style="display: flex; font-weight: 700; font-size: 16px;">時間 : <div id="tripTime" style="font-weight: 400; margin-left: 5px;"></div></div>
+                        <div class="tripDetail" style="width: 174px; height: 20px; display: flex; font-weight: 700; font-size: 16px;">費用 : <div id="tripPrice" style="font-weight: 400; margin-left: 5px;"></div></div>
+                        <div class="tripDetail" style="display: flex; font-weight: 700; font-size: 16px;"> 地點 : <div id="tripAddr" style="font-weight: 400; margin-left: 5px;"></div></div>
                     </div>
                 </div>
                 <hr class="divider">
@@ -150,11 +150,11 @@ async function loadBooking() {
     document.getElementById("tripSection").style.display = "block";
     document.getElementById("tripImage").src  = data.attraction.image;
     document.getElementById("tripTitle").innerText = `台北一日遊：${data.attraction.name}`;
-    document.getElementById("tripDate").innerText  = `日期：${data.date}`;
+    document.getElementById("tripDate").innerText  = `${data.date}`;
     document.getElementById("tripTime").innerText  =
-        `時間：${data.time === "morning" ? "早上 9 點到下午 4 點" : "下午 2 點到晚上 9 點"}`;
-    document.getElementById("tripPrice").innerText = `費用：新台幣 ${data.price} 元`;
-    document.getElementById("tripAddr").innerText  = `地點：${data.attraction.address}`;
+        `${data.time === "morning" ? "早上 9 點到下午 4 點" : "下午 2 點到晚上 9 點"}`;
+    document.getElementById("tripPrice").innerText = `新台幣 ${data.price} 元`;
+    document.getElementById("tripAddr").innerText  = `${data.attraction.address}`;
     document.getElementById("checkoutPrice").innerText = `總價：新台幣 ${data.price} 元`;
 }
 
