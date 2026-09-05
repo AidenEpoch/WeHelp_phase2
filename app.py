@@ -321,41 +321,110 @@ async def getAttractionById(attraction_id: int):
 
 @app.get("/api/booking")
 async def getOrder(request: Request):
-    body = await request.json()
-    order_date = body["date"]
-    order_time = body["time"]
-    order_price = body["price"]
-    return JSONResponse(
-        status_code = 200,
-        content = {"data": {}, "date": order_date, "time": order_time, "price": order_price}
-    )
+    token = request.headers["Authorization"].split(" ")[1]
+    if token == None:
+        return JSONResponse(status_code=403, content={"error": True, "message": "未登入系統"})
+    try:
+        result = jwt.decode(token, "secret", algorithms=["HS256"])
+        member_id = result["id"]
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT b.*, a.id as a_id, a.name, a.address
+            FROM booking b
+            JOIN attractions a ON b.attraction_id = a.id
+            WHERE b.member_id = %s
+        """, (member_id,))
+        result = cursor.fetchone()
+        if not result:
+            return JSONResponse(status_code=200, content={"data": None})
+        cursor.execute("SELECT url FROM attraction_image WHERE attraction_id = %s LIMIT 1", (result["attraction_id"],))
+        img = cursor.fetchone()
+        image_url = img["url"] if img else ""
+        return JSONResponse(
+            status_code = 200,
+            content = {"data": {"attraction": {
+                                "id": result["attraction_id"],
+                                "name": result["name"],
+                                "address": result["address"],
+                                "image": image_url
+                                }, 
+                                "date": str(result["date"]), 
+                                "time": result["time"], 
+                                "price": result["price"]}}
+        )
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return JSONResponse(status_code=403, content={"error": True, "message": "未登入系統"})
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 @app.post("/api/booking")
 async def setSchedule(request: Request):
-    body = await request.json()
+    token = request.headers["Authorization"].split(" ")[1]
     try:
+        result = jwt.decode(token, "secret", algorithms=["HS256"])
+        member_id = result["id"]
+        member_name = result["name"]
+        member_email = result["email"]
+        body = await request.json()
+        attraction_id = body["attractionId"]
+        date = body["date"]
+        time = body["time"]
+        price = body["price"]
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("DELETE FROM booking WHERE member_id = %s", (member_id,))
+        cursor.execute("""
+            INSERT INTO booking(member_id, attraction_id, date, time, price)VALUES(%s, %s, %s, %s, %s)
+        """, (member_id, attraction_id, date, time, price,))
+        conn.commit()
+        print("已經建立好預定資訊了")
         return JSONResponse(
             status_code = 200,
             content = {"ok": True}
         )
+        
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return JSONResponse(status_code=403, content={"error": True, "message": "未登入系統"})
+
     except Exception as e:
         return JSONResponse(
-            status_code = 500,
-            content = {"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
+            status_code = 400,
+            content = {"error": True, "message": f"{str(e)}"}
         )
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 @app.delete("/api/booking")
-async def deleteSchedule():
+async def deleteSchedule(request: Request):
+    token = request.headers["Authorization"].split(" ")[1]
     try:
+        payload = jwt.decode(token, "secret", algorithms=["HS256"])
+        member_id = payload["id"]
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM booking WHERE member_id = %s", (member_id,))
+        conn.commit()
         return JSONResponse(
             status_code = 200,
             content = {"ok": True}
         )
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return JSONResponse(status_code=403, content={"error": True, "message": "未登入系統"})
+    
     except Exception as e:
         return JSONResponse(
             status_code = 403,
             content = {"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
         )
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))

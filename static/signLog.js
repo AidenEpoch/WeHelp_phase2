@@ -57,7 +57,7 @@ async function orderSchedule(){
         const signInMsg = document.querySelector("#signInMsg");
         signInMsg.style.display = "none";
     }else{
-        alert("已經登入囉~");
+        window.location.href = "/booking/";
     }
 }
 
