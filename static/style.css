@@ -51,7 +51,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: url("/static/welcome_image.png");
+    background-image: url("/static/image/welcome_image.png");
     background-size: cover;
     background-position: center;
 }
@@ -175,19 +175,19 @@ body {
 }
 
 .leftBtn{
-    background-image: url("/static/left_default.png");
+    background-image: url("/static/image/left_default.png");
 }
 
 .leftBtn:hover{
-    background-image: url("/static/left_hover.png");
+    background-image: url("/static/image/left_hover.png");
 }
 
 .rightBtn{
-    background-image: url("/static/right_default.png");
+    background-image: url("/static/image/right_default.png");
 }   
 
 .rightBtn:hover{
-    background-image: url("/static/right_hover.png");
+    background-image: url("/static/image/right_hover.png");
 }
 
 .mrtList {

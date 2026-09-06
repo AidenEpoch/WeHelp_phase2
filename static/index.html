@@ -12,7 +12,7 @@
         <div class="nav">
             <div class="navLeft" onclick="location.reload()">台北一日遊</div>
             <div class="navRight">
-                <div>預訂行程</div>
+                <div onclick = "orderSchedule()">預訂行程</div>
                 <div onclick="openSignDialog()" id="signIcon">登入/註冊</div>
                 <div onclick="logout()" id="logoutIcon" style="display: none;">登出系統</div>
             </div>
@@ -41,9 +41,9 @@
 
     <div class="attractionSection">
         <div class="listBar">
-            <img class="scrollBtn" id="scrollLeft" src="/static/left_default.png" onmouseover="this.src='/static/left_hover.png'" onmouseout="this.src='/static/left_default.png'">
+            <img class="scrollBtn" id="scrollLeft" src="/static/image/left_default.png" onmouseover="this.src='/static/image/left_hover.png'" onmouseout="this.src='/static/image/left_default.png'">
             <div class="mrtList" id="mrtList"></div>
-            <img class="scrollBtn" id="scrollRight" src="/static/right_default.png" onmouseover="this.src='/static/right_hover.png'" onmouseout="this.src='/static/right_default.png'">
+            <img class="scrollBtn" id="scrollRight" src="/static/image/right_default.png" onmouseover="this.src='/static/image/right_hover.png'" onmouseout="this.src='/static/image/right_default.png'">
         </div>
         
         <div id="attractionContainer" class="attractionItems"></div>
@@ -77,7 +77,7 @@
             setupEventListeners();
         });
 
-        
+
         async function loadAttractions(isReset = false) {
             if (isLoading || (nextPage === null && !isReset)) return;
             isLoading = true;
@@ -100,7 +100,7 @@
                     result.data.forEach(item => {
                         const card = document.createElement("div");
                         card.className = "section";
-                        const imageUrl = item.images[0] || "/static/welcome_image.png";
+                        const imageUrl = item.images[0] || "/static/image/welcome_image.png";
 
                         card.innerHTML = `
                             <div class="imgBlock">
