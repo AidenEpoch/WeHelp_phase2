@@ -100,7 +100,8 @@ body {
     align-items: flex-start;
     gap: 20px;
     padding: 15px 0 20px 0;
-    width: 980px;
+    width: 100%;
+    max-width: 980px;
 }
 
 .tripImage {
@@ -133,7 +134,7 @@ body {
     color: #666666;
     line-height: 1.6;
     height: 24px;
-    width: 700px;
+    width: auto;
 }
 
 .deleteBtn {
@@ -299,11 +300,15 @@ body {
 @media (max-width: 600px) {
     .tripCard {
         flex-direction: column;
+        width: 100% !important;
     }
 
     .tripImage {
-        width: 100%;
-        height: 220px;
+        width: 100% !important;  
+        height: 200px !important; 
+        object-fit: cover;
+        flex-shrink: 1;
+        margin-right: 0;
     }
 
     .deleteBtn {
@@ -313,8 +318,7 @@ body {
     }
 
     .formInput {
-        width: 100%;
-        flex: 1;
+        width: 200px;
     }
 
     .checkoutSection {
@@ -322,7 +326,8 @@ body {
     }
 
     .checkoutBtn {
-        width: auto;
+        width: 173px;
+        height: 36px;
         text-align: center;
     }
 }
