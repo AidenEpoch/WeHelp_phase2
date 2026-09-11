@@ -2,6 +2,9 @@ from fastapi import *
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import os
+import http   #這個跟tappay有關
+import httpx  #這個跟tappay有關
+from datetime import datetime  #為了生成 orderNumber
 app=FastAPI()
 
 
@@ -426,6 +429,167 @@ async def deleteSchedule(request: Request):
             cursor.close()
             conn.close()
 
+
+@app.post("/api/orders")
+async def createOrder(request: Request):
+    auth = request.headers.get("Authorization")
+    partnerkey = request.headers.get("x-api-key")
+    if auth == None:
+        return JSONResponse(
+            status_code = 403,
+            content = {"error": True, "message": "未登入系統"}
+        )
+    token = auth.split(" ")[1]
+    orderNumber = datetime.now().strftime("%Y%m%d%H%M%S%f")[:17]
+    conn = db_pool.get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""SELECT order_number, status FROM orders WHERE order_number = %s;""", (orderNumber,))
+    row = cursor.fetchone()
+    print(f"row = {row}")
+    if row != None:
+        print(f"row = {row}")
+        if row["status"] == 1:
+            return JSONResponse(
+                status_code = 403,
+                content = {"error": True, "message": "此訂單已經付款，勿重複付款"}
+            )
+    else:
+        try:
+            payload = jwt.decode(token, "secret", algorithms=["HS256"])
+            body = await request.json()
+            name = payload["name"]
+            email = payload["email"]
+            id = payload["id"]
+            phoneNumber = body["phoneNumber"]
+            prime = body["prime"]
+            details = body["details"]
+            cursor.execute("""SELECT price, attraction_id, date, time FROM booking WHERE member_id = %s;""", (id,))
+            row = cursor.fetchone()
+            price = int(row["price"])
+            attraction_id = int(row["attraction_id"])
+            date = row["date"]
+            time = row["time"]
+
+            ###########   彭彭說，在送出 tappay api 之前，先建立訂單的 datum，這樣到時候無論是成功的或是失敗的訂單都能在 database 中找到 ###############
+            
+            cursor.execute("""INSERT INTO orders(member_email, member_phone, order_number, attraction_id, date, time, price)VALUES(%s, %s, %s, %s, %s, %s, %s);""", (email, phoneNumber, orderNumber, attraction_id, date, time, price,))
+            conn.commit()
+            print(f"成功建立訂單")
+            ####################################### 
+
+            ###########   以下是向 TapPay發起付款的部分    #################
+
+            tappay_url = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
+            headers = {
+                "Content-Type": "application/json",
+                "x-api-key": partnerkey
+            }
+
+            tappay_body = {
+                "prime": prime,
+                "partner_key": partnerkey,
+                "merchant_id": "epoch1217_CTBC",
+                "details": details,
+                "amount": price,
+                "cardholder": {
+                    "phone_number": phoneNumber,
+                    "name": name,
+                    "email": email
+                },
+                "remember": False
+            }
+
+            async with httpx.AsyncClient() as client:
+                tappay_response = await client.post(
+                    tappay_url,
+                    json=tappay_body,
+                    headers=headers
+                )
+                tappay_result = tappay_response.json()
+            print(f"成功呼叫")
+            print(f"status = {tappay_result['status']}")
+            print(f"TapPay 回傳：{tappay_result}")
+            if tappay_result["status"] != 0:
+                return JSONResponse(
+                    status_code=200,
+                    content={"data":{
+                        "number": orderNumber,
+                        "payment":{
+                            "status": 0,
+                            "message": "付款失敗"
+                        }
+                    }}
+                )
+            ##############################################################
+            cursor.execute("""UPDATE orders SET status = 1 WHERE order_number = %s;""", (orderNumber,))
+            conn.commit()
+            print(f"付款成功了喔~~~~~")
+            return JSONResponse(
+                status_code = 200,
+                content = {"data":{
+                    "number": orderNumber,
+                    "payment":{
+                        "status": 0,
+                        "message": "付款成功"
+                    }
+                }}
+            )
+        except Exception as e:
+            return JSONResponse(
+                status_code = 400,
+                content = {"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
+            )
+    if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@app.get("/api/order/{orderNumber}")            
+async def getOrder(request:Request):
+    token = request.headers["Authorization"].split(" ")[1]
+    if token == None:
+        return JSONResponse(
+            status_code = 403,
+            content = {"error": True, "message": "未登入系統"}
+        )
+    try:
+        payload = jwt.decode(token, "secret", algorithms = ["HS256"])
+        name = payload["name"]
+        email = payload["email"]
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""SELECT * FROM orders WHERE member_email = %s;""", (email,))
+        row = cursor.fetchone()
+        print(row)
+        return JSONResponse(
+            status_code = 200,
+            content = {"data": {
+                                "number": "20210425121135",
+                                "price": 2000,
+                                "trip": {
+                                "attraction": {
+                                    "id": 10,
+                                    "name": "平安鐘",
+                                    "address": "臺北市大安區忠孝東路 4 段",
+                                    "image": "https://yourdomain.com/images/attraction/10.jpg"
+                                },
+                                "date": "2022-01-31",
+                                "time": "afternoon"
+                                },
+                                "contact": {
+                                "name": "彭彭彭",
+                                "email": "ply@ply.com",
+                                "phone": "0912345678"
+                                },
+                                "status": 1
+                        }
+
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code = 403,
+            content = {"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
+        )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

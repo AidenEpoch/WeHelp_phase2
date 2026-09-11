@@ -3,9 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/thankyou.css">
+  <link rel="stylesheet" href="/static/signLog.css">
   <title>Thank You</title>
 </head>
 <body>
-  
+    <nav class="navSection">
+        <div class="nav">
+            <div class="navLeft" onclick="location.href = '/'">台北一日遊</div>
+            <div class="navRight">
+                <div onclick = "orderSchedule()">預訂行程</div>
+                <div onclick="openSignDialog()" id="signIcon">登入/註冊</div>
+                <div onclick="logout(); location.href ='/'" id="logoutIcon" style="display: none;">登出系統</div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="orderContent">
+        <div>感謝您的預定，訂單編號如下:</div>
+        <div id="orderMessage" class="orderMsg"></div>
+        <div>請記住此訂單編號，或可至會員中心查詢，謝謝</div>
+    </div>
+
+
+    <footer class="footer">
+        <div>COPYRIGHT © 2021 台北一日遊</div>
+    </footer>
 </body>
+
+<script src="/static/signLog.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    initAuthModal();
+    setOrderContent();
+});
+</script>
+
+<script>
+    async function setOrderContent(){
+        const orderContent = document.querySelector("#orderMessage");
+        const order_number = window.location.search.split("=")[1];
+        orderContent.innerText = order_number;
+    }
+</script>
+
+
+
 </html>

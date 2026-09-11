@@ -14,7 +14,7 @@
             <div class="navRight">
                 <div onclick="orderSchedule()">預訂行程</div>
                 <div onclick="openSignDialog()" id="signIcon">登入/註冊</div>
-                <div onclick="logout()" id="logoutIcon" style="display: none;">登出系統</div>
+                <div onclick="logout(); location.href ='/'" id="logoutIcon" style="display: none;">登出系統</div>
             </div>
         </div>
     </nav>
@@ -69,15 +69,15 @@
                     <div class="formTitle">信用卡付款資訊</div>
                     <div class="formRowb1">
                         <label class="formLabel">卡片號碼：</label>
-                        <input type="text" id="cardNumber" class="formInput" placeholder="**** **** **** ****">
+                        <div id="cardNumber" class="formInput tappayInput"></div>
                     </div>
                     <div class="formRowb2">
                         <label class="formLabel">過期時間：</label>
-                        <input type="text" id="cardExpiry" class="formInput" placeholder="MM / YY">
+                        <div id="cardExpiry" class="formInput tappayInput"></div>
                     </div>
                     <div class="formRowb3">
                         <label class="formLabel">驗證密碼：</label>
-                        <input type="text" id="cardCVV" class="formInput" placeholder="CVV">
+                        <div id="cardCVV" class="formInput tappayInput"></div>
                     </div>
                 </div>
 
@@ -86,7 +86,7 @@
                 <!-- 結帳 -->
                 <div class="checkoutSection">
                     <div id="checkoutPrice" class="checkoutPrice"></div>
-                    <button class="checkoutBtn">確認訂購並付款</button>
+                    <button class="checkoutBtn" onclick="onSubmit()">確認訂購並付款</button>
                 </div>
 
             </div>
@@ -105,6 +105,7 @@
 </body>
 
 <script src="/static/signLog.js"></script>
+<script src="https://js.tappaysdk.com/sdk/tpdirect/v5.14.0"></script>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
     await initAuthModal();
@@ -145,6 +146,7 @@ async function loadBooking() {
         document.getElementById("emptySection").style.display = "block";
         return;
     }
+    
 
     const data = result.data;
     document.getElementById("tripSection").style.display = "block";
@@ -156,6 +158,8 @@ async function loadBooking() {
     document.getElementById("tripPrice").innerText = `新台幣 ${data.price} 元`;
     document.getElementById("tripAddr").innerText  = `${data.attraction.address}`;
     document.getElementById("checkoutPrice").innerText = `總價：新台幣 ${data.price} 元`;
+
+    setupTayPay();
 }
 
 async function deleteBooking() {
@@ -169,6 +173,127 @@ async function deleteBooking() {
         location.reload();
     }
 }
+</script>
+
+<script>
+
+    function setupTayPay(){
+        TPDirect.setupSDK(171059, 'app_TKD0OmWPgVShchS8NSVDNNNoQ61SYDXwcuw80bro2itdTtmDFyR9G0zK9hkO', 'sandbox');
+    let fields = {
+        number: {
+            element: '#cardNumber',
+            placeholder: '**** **** **** ****'
+        },
+
+        expirationDate: {
+            element: '#cardExpiry',
+            placeholder: 'MM / YY'
+        },
+
+        ccv: {
+            element: '#cardCVV',
+            placeholder: "ccv"
+        }
+    };
+
+    TPDirect.card.setup({
+        fields: fields,
+        styles: {
+            'input': {
+                'color': 'gray'
+            },
+            
+            'input.ccv': {
+                'font-size': '16px'
+            },
+
+            'input.expiration-date': {
+                'font-size': '16px'
+            },
+
+            'input.card-number': {
+                'font-size': '16px'
+            },
+
+            ':focus': {
+                'color': 'black'
+            },
+
+            '.valid': {
+                'color': 'green'
+            },
+
+            '.invalid': {
+                'color': 'red'
+            },
+
+            '@media screen and (max-width: 600px)': {
+            'input': {
+                'color': 'orange'
+            }
+            }
+        },
+
+        isMaskCreditCardNumber: true,
+        maskCreditCardNumberRange: {
+            beginIndex: 6,
+            endIndex: 11
+        }
+    });
+    }
+
+    function onSubmit(){
+        event.preventDefault();
+        const tappayStatus = TPDirect.card.getTappayFieldsStatus();
+        let phone = document.querySelector("#contactPhone").value;
+        if(phone == ""){
+            alert("請填寫手機號碼\n Please fill in the contact phone number");
+            return;
+        }
+
+        if (tappayStatus.canGetPrime === false) {
+            alert('can not get prime');
+            return
+
+        }
+
+        TPDirect.card.getPrime(async (result) => {
+        if (result.status !== 0) {
+            alert('get prime error ' + result.msg);
+            return;
+        }
+
+        // send prime to your server, to pay with Pay by Prime API .
+        // Pay By Prime Docs: https://docs.tappaysdk.com/tutorial/zh/back.html#pay-by-prime-api
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+            "/api/orders",
+            {method: "POST",
+             headers: {"Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                        "x-api-key": "partner_BLBCT6xn93uWXu5n0SZ2IMjrYoMdsYCrBxrEnP3lYiNkgA5jIyqhbWnT"},
+             body: JSON.stringify({
+                prime: result.card.prime,
+                phoneNumber: phone,
+                details: "TapPay Test"
+             })  
+            }
+        );
+        const orderResult = await response.json();
+        const orderNumber = orderResult.data.number;
+        if(orderResult.data.payment.message == "付款成功"){
+            const deleteResponse = await fetch("/api/booking",{
+                method: "DELETE",
+                headers:{"Authorization": `Bearer ${token}`}
+            })
+            const deleteResult = await deleteResponse.json();
+            if(deleteResult.ok){
+                location.href = `/thankyou?number=${orderNumber}`;
+            }
+        }
+        })
+    }
+    
 </script>
 
 </html>
