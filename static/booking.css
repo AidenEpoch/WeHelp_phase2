@@ -226,6 +226,13 @@ body {
     outline: none;
 }
 
+.tappayInput {
+    padding: 0;         
+    height: 38px;
+    display: flex;
+    align-items: center;
+}
+
 .formNote {
     font-size: 14px;
     color: #666666;
