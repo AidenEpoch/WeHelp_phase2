@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/signLog.css">
+    <link rel="stylesheet" href="/static/member.css">
+    <title>Document</title>
+</head>
+<body><nav class="navSection">
+        <div class="nav">
+            <div class="navLeft" onclick="location.href = '/'">台北一日遊</div>
+            <div class="navRight">
+                <div onclick = "orderSchedule()">預訂行程</div>
+                <div onclick="openSignDialog()" id="signIcon">登入/註冊</div>
+                <div onclick="memberCenter()" id="logoutIcon" style="display: none;">會員中心</div>
+            </div>
+        </div>
+    </nav>
+    <div class="welcomeSection">
+        <div id="welcomeMsg" class="welcomeWord">您好，</div>
+    </div>
+    <hr style="color: gray; opacity: 0.2;">
+
+    <div class="contentBlock">
+        <div class="contentSection">
+            <div style="margin-left: 10px; font-size: 19px; font-weight: 700; margin-bottom: 30px; margin-top: 40px;">AI工具整合</div>
+            <div style="margin-left: 20px; margin-bottom: 15px; font-weight: 400;">MCP伺服器設定:</div>
+            <div style="margin-left: 40px; margin-bottom: 15px; font-weight: 400;">• Host URL</div>
+            <div style="margin-left: 60px; margin-bottom: 15px; font-weight: 400;">http://3.235.200.209:8000/mcp</div>
+            <div style="margin-left: 40px; margin-bottom: 15px; font-weight: 400;">• Bearer Token</div>
+            <div id="tokenMsg" style="margin-left: 60px; margin-bottom: 15px; font-weight: 400;"></div>
+            <div class="tokenBtn" onclick="getToken()">產生/更新金鑰</div>
+        </div>
+    </div>
+
+    <hr style="color: gray; opacity: 0.2; margin-top: 15px;">
+
+    <div class="btnSection">
+        <div class="logoutBtn" onclick="logout()">登出會員</div>
+    </div>
+
+    <footer class="footer">
+        <div>COPYRIGHT © 2021 台北一日遊</div>
+    </footer>
+</body>
+<script src="/static/signLog.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        initAuthModal();
+        getInform();
+    });
+</script>
+<script>
+    let welcomeMsg = document.querySelector("#welcomeMsg");
+    async function getInform(){
+        const token = localStorage.getItem("token");
+        const response = await fetch("/api/user/auth", {
+            method: "GET",
+            headers:{"Authorization": `Bearer ${token}`}
+        });
+        const result = await response.json();
+        if(result.data){
+            welcomeMsg.innerText += result.data.name + " :";
+        }else{
+            location.href = "/";
+        }
+    }
+    async function getToken(){
+       const token = localStorage.getItem("token");
+       let response = await fetch("/api/token", {
+            method: "GET",
+            headers:{"Authorization": `Bearer ${token}`}
+       });
+       let result = await response.json();
+       if(result.ok){
+            let tokenMsg = document.querySelector("#tokenMsg");
+            tokenMsg.innerText = result.token;
+       } 
+    }
+</script>
+</html>

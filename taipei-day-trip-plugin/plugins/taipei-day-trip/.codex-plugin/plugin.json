@@ -1,0 +1,24 @@
+{
+  "name": "taipei-day-trip",
+  "description": "台北一日遊景點搜尋與導覽行程預訂服務",
+  "version": "1.0.0+codex.20260919125049",
+  "author": {
+    "name": "Aiden"
+  },
+  "mcpServers": "./.mcp.json",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "台北一日遊",
+    "shortDescription": "搜尋台北景點並進行行程預訂。",
+    "longDescription": "提供台北一日遊景點 MCP 搜尋、行程預訂與付款連結產生功能。",
+    "developerName": "Aiden",
+    "category": "Travel",
+    "capabilities": [
+      "MCP",
+      "Booking"
+    ],
+    "defaultPrompt": [
+      "台北一日遊景點搜尋與預訂"
+    ]
+  }
+}

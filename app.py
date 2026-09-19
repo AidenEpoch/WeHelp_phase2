@@ -36,6 +36,9 @@ import json
 import jwt
 from datetime import datetime, timedelta, timezone
 
+import hashlib
+import secrets
+
 db_config ={
 	"user" : "root",
 	"password" : "12345",
@@ -48,6 +51,12 @@ db_pool = pooling.MySQLConnectionPool(
     pool_size=10,
     **db_config
 )
+
+
+@app.get("/member")
+async def member():
+    return FileResponse("./static/member.html", media_type="text/html")
+
 
 
 
@@ -591,6 +600,145 @@ async def getOrder(request:Request):
             content = {"error": True, "message": f"伺服器內部錯誤: {str(e)}"}
         )
 
+
+####################### 以下是 fastMCP 的部分 ####################
+
+from fastmcp import FastMCP, Context
+from typing import Optional
+
+@app.get("/api/token")
+async def getToken(request:Request):
+     token = request.headers["Authorization"].split(" ")[1]
+     if token == None:
+        return JSONResponse(
+            status_code = 403,
+            content = {"error": True, "message": "未登入系統"}
+        )
+     result = jwt.decode(token, "secret", algorithms=["HS256"])
+     name = result["name"]
+     email = result["email"]
+     random_bytes = secrets.token_bytes(32)
+     access_token = hashlib.sha256(random_bytes).hexdigest()
+     conn = db_pool.get_connection()
+     cursor = conn.cursor(dictionary=True)
+     cursor.execute("""UPDATE members SET token = %s WHERE name = %s AND email = %s""", (access_token,name, email,))
+     conn.commit()
+     cursor.close()
+     conn.close()
+
+     return JSONResponse(
+         status_code = 200,
+         content = {"ok": True, "token": access_token}
+     )
+
+
+mcp = FastMCP("台北一日遊")
+
+@mcp.tool()
+def search(keyword: str) -> dict:
+    """透過關鍵字和捷運站名搜尋台北市一日旅遊的景點"""
+    conn = None
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT id, name, description 
+            FROM attractions 
+            WHERE name LIKE %s OR mrt = %s
+            LIMIT 10
+        """, (f"%{keyword}%", keyword))
+        rows = cursor.fetchall()
+        return {"data": list(rows)}
+    except Exception as e:
+        return {"error": True}
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
+@mcp.tool()
+def add_to_cart(
+    attractionId: int,
+    date: str,
+    time: str,
+    price: int,
+    token: Optional[str] = None,
+    ctx: Context = None
+) -> dict:
+    """
+    根據景點編號、日期、時間、價格，預定一個景點導覽行程。
+    
+    參數說明：
+    - time: 必須為 "morning" 或 "afternoon"
+    - price: "morning" 固定為 2000，"afternoon" 固定為 2500
+    """
+    conn = None
+    try:
+        incoming_mcp_token = token
+
+        # 1. 若參數沒有拿到 token，嘗試從 Context Header 擷取
+        if not incoming_mcp_token and ctx and ctx.request_context:
+            meta = getattr(ctx.request_context, "meta", None)
+            if meta:
+                headers = getattr(meta, "headers", {}) or {}
+                if isinstance(headers, dict):
+                    auth_header = headers.get("authorization", "") or headers.get("Authorization", "")
+                else:
+                    auth_header = getattr(headers, "authorization", "") or getattr(headers, "Authorization", "")
+
+                if auth_header.startswith("Bearer "):
+                    incoming_mcp_token = auth_header.split(" ")[1]
+
+        # 2. 如果兩種方式都拿不到 Token
+        if not incoming_mcp_token:
+            return {"error": True, "message": "未提供 Bearer Token，請確認 MCP 設定檔 (mcp.json) 包含 Authorization Header"}
+
+        # 3. 自動校正時間與價格
+        if time == "morning":
+            price = 2000
+        elif time == "afternoon":
+            price = 2500
+        else:
+            return {"error": True, "message": "時間格式不正確"}
+
+        # 4. 比對資料庫 members.token 欄位
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id FROM members WHERE token = %s", (incoming_mcp_token,))
+        member = cursor.fetchone()
+
+        if not member:
+            return {"error": True, "message": "Token 驗證失敗，無效的金鑰"}
+
+        member_id = member["id"]
+
+        # 5. 刪除舊預訂並新增新預訂
+        cursor.execute("DELETE FROM booking WHERE member_id = %s", (member_id,))
+        cursor.execute("""
+            INSERT INTO booking (member_id, attraction_id, date, time, price)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (member_id, attractionId, date, time, price))
+        conn.commit()
+
+        return {
+            "ok": True,
+            "message": "台北導覽行程，預定成功，請到 http://3.235.200.209:8000/booking 完成付款。"
+        }
+
+    except Exception as e:
+        print(f"預訂失敗: {str(e)}")
+        return {"error": True, "message": str(e)}
+    finally:
+        if conn and conn.is_connected():
+            cursor.close()
+            conn.close()
+
+
+mcp_app = mcp.http_app(path='/')
+app.router.lifespan_context = mcp_app.lifespan
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app.mount(
@@ -598,4 +746,6 @@ app.mount(
     StaticFiles(directory=os.path.join(BASE_DIR, "static")),
     name="static",
 )
+
+app.mount("/mcp", mcp_app)
 
