@@ -14,7 +14,7 @@
             <div class="navRight">
                 <div onclick = "orderSchedule()">預訂行程</div>
                 <div onclick="openSignDialog()" id="signIcon">登入/註冊</div>
-                <div onclick="logout()" id="logoutIcon" style="display: none;">登出系統</div>
+                <div onclick="memberCenter()" id="logoutIcon" style="display: none;">會員中心</div>
             </div>
         </div>
     </nav>
@@ -115,7 +115,7 @@
 
                         card.addEventListener("click", () => {
                             window.location.href = `/attraction/${item.id}`;
-                        });
+                        });   /*這個程式碼就是讓我們在點擊每個 attraction card 的時候能跳轉到該 attraction 頁面的程式碼*/
 
                         card.style.cursor = "pointer";
 
@@ -186,7 +186,7 @@
         function setupIntersectionObserver() {
             const sentinel = document.getElementById("sentinel");
             const observer = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && nextPage !== null && !isLoading) {
+                if (entries[0].isIntersecting && nextPage !== null && !isLoading) {   /*isIntersecting: 當獵物(entry，也就是本程式碼的sentinel)出現在window裡面時，isIntersecting就會是True*/
                     loadAttractions(false);
                 }
             }, { threshold: 0.1 });

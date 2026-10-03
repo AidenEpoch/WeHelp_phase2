@@ -1,0 +1,69 @@
+.logoutBtn{
+    background-color: #448899;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 19px;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 117px;
+    cursor: pointer;
+}
+
+.tokenBtn{
+    background-color: #448899;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 19px;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-top: 15px;
+    width: 165px;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-bottom: 15px;
+}
+
+.welcomeSection{
+    display: flex;
+    align-items: center;
+    height: 120px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;  
+    padding: 0 10px; 
+}
+
+.welcomeWord{
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+.btnSection{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;  
+    padding: 10px;   
+}
+
+
+.contentSection{
+    height: auto;
+    width: 100%;
+}
+
+.contentBlock{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: auto;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;  
+    padding: 0 10px; 
+}

@@ -31,11 +31,20 @@ async function verify(){
     }
 }
 
+async function memberCenter(){
+    /*localStorage.removeItem("token");*/
+    location.reload();
+    /*document.querySelector("#signIcon").style.display = "block"; */
+    /*document.querySelector("#logoutIcon").style.display = "none"; */
+    location.href = "/member"
+}
+
 async function logout(){
     localStorage.removeItem("token");
     location.reload();
-    document.querySelector("#signIcon").style.display = "block";
-    document.querySelector("#logoutIcon").style.display = "none";
+    document.querySelector("#signIcon").style.display = "block"; 
+    document.querySelector("#logoutIcon").style.display = "none"; 
+    location.href = "/";
 }
 
 async function openSignDialog() {
